@@ -2,6 +2,8 @@ var join = require('path').join,
     spawn = require('child_process').spawn,
     os = require('os');
 
+var fs = require('fs');
+
 var OS = os.platform();
 var retVal = "";
 
@@ -30,6 +32,19 @@ var dialogNode = module.exports = {
   // you can safely ignore this function if using no packaging tool(npm is fine)
   setCwd: function(dirname){
     cwd = dirname;
+  },
+
+  getMsgboxVbs: function() {
+    if (process.pkg) {
+      const destination = fs.mkdtempSync(join(os.tmpdir(), 'msgbox'));
+      const vbsPath = join(destination, 'msgbox.vbs');
+
+      fs.copyFileSync(join(__dirname, 'msgbox.vbs'), vbsPath);
+
+      return vbsPath;
+    } else {
+      return join(__dirname, 'msgbox.vbs');
+    }
   },
 
   init: function(){
@@ -74,7 +89,7 @@ var dialogNode = module.exports = {
     {
       cmd.push('cscript');
       cmd.push('//Nologo');
-      cmd.push('msgbox.vbs');
+      cmd.push(this.getMsgboxVbs());
       cmd.push('notification');
       cmd.push('information: ' + title);
       cmd.push(str);
@@ -126,7 +141,7 @@ var dialogNode = module.exports = {
 
       cmd.push('cscript');
       cmd.push('//Nologo');
-      cmd.push('msgbox.vbs');
+      cmd.push(this.getMsgboxVbs());
       cmd.push('notification');
       cmd.push('warning' + title);
       cmd.push(str);
@@ -176,7 +191,7 @@ var dialogNode = module.exports = {
     {
       cmd.push('cscript');
       cmd.push('//Nologo');
-      cmd.push('msgbox.vbs');
+      cmd.push(this.getMsgboxVbs());
       cmd.push('notification');
       cmd.push('error: ' + title);
       cmd.push(str);
@@ -231,7 +246,7 @@ var dialogNode = module.exports = {
     {
       cmd.push('cscript');
       cmd.push('//Nologo');
-      cmd.push('msgbox.vbs')
+      cmd.push(this.getMsgboxVbs())
       cmd.push('question');
       cmd.push(title);
       cmd.push(str);
@@ -295,7 +310,7 @@ var dialogNode = module.exports = {
     {
       cmd.push('cscript');
       cmd.push('//Nologo');
-      cmd.push('msgbox.vbs')
+      cmd.push(this.getMsgboxVbs())
       cmd.push('entry');
       cmd.push(title);
       cmd.push(str);
@@ -387,7 +402,7 @@ var dialogNode = module.exports = {
     {
       cmd.push('cscript');
       cmd.push('//Nologo');
-      cmd.push('msgbox.vbs')
+      cmd.push(this.getMsgboxVbs())
       cmd.push('fileselect');
       cmd.push(title);
       cmd.push(str);
@@ -418,12 +433,12 @@ var dialogNode = module.exports = {
     try {
       var child = spawn(bin, args, {cwd:cwd});
     } catch (err) {
-        console.log('spawn failed : ' + err.message);
+      console.log('spawn failed : ' + err.message);
     }
 
     var stdoutlines = 0;
 
-    //this.debugprint(cmd,args,callback);
+    // this.debugprint(cmd,args,callback);
 
     child.stdout.on('data', function(data){
       stdout += data.toString();
